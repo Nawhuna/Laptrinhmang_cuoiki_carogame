@@ -15,6 +15,7 @@ namespace Client.Forms
         private TextBox txtChat;
         private TextBox txtMessage;
         private Button btnSend;
+        private Button btnSurrender;   // 👈 nút đầu hàng mới
 
         /// <summary>
         ///  Clean up any resources being used.
@@ -39,6 +40,8 @@ namespace Client.Forms
             this.txtChat = new TextBox();
             this.txtMessage = new TextBox();
             this.btnSend = new Button();
+            this.btnSurrender = new Button();
+
             this.SuspendLayout();
             // 
             // txtPlayerName
@@ -103,6 +106,15 @@ namespace Client.Forms
             this.btnSend.Text = "Send";
             this.btnSend.UseVisualStyleBackColor = true;
             this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
+            // btnSurrender
+            this.btnSurrender.Location = new Point(670, 550);   // 👈 vị trí, muốn thì đổi
+            this.btnSurrender.Name = "btnSurrender";
+            this.btnSurrender.Size = new Size(100, 23);
+            this.btnSurrender.TabIndex = 7;
+            this.btnSurrender.Text = "Đầu hàng";
+            this.btnSurrender.UseVisualStyleBackColor = true;
+            this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
+
             // 
             // FormMain
             // 
@@ -121,7 +133,7 @@ namespace Client.Forms
             this.Controls.Add(this.txtChat);
             this.Controls.Add(this.txtMessage);
             this.Controls.Add(this.btnSend);
-
+            this.Controls.Add(this.btnSurrender);
             this.ResumeLayout(false);
             this.PerformLayout();
         }
