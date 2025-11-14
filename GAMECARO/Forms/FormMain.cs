@@ -20,15 +20,28 @@ namespace Client.Forms
         private Label _lblMark;
         private Label _lblTimer;
 
+        // thêm label rank
+        private Label _lblScore;
+        private Label _lblWins;
+        private Label _lblLosses;
+
+        // giao dien chinh 
+
         public FormMain()
         {
             InitializeComponent();
 
             this.Text = "Caro Online 15x15";
+
             this.ClientSize = new Size(800, 620); // rộng hơn tí cho khu chat
             this.DoubleBuffered = true;
 
             // ====== PANEL TRÊN: TURN / YOU / TIMER ======
+
+            this.ClientSize = new Size(710, 620);   // tăng rộng để đủ rank
+            this.DoubleBuffered = true;
+
+
             var top = new Panel
             {
                 Dock = DockStyle.Top,
@@ -43,27 +56,64 @@ namespace Client.Forms
                 Text = "NextTurn: ...",
                 Font = new Font("Arial", 12, FontStyle.Bold)
             };
+
             _lblMark = new Label
             {
                 AutoSize = true,
-                Left = 200,
+                Left = 180,
                 Text = "You: ?",
                 Font = new Font("Arial", 12, FontStyle.Bold)
             };
+
             _lblTimer = new Label
             {
                 AutoSize = true,
-                Left = 400,
+                Left = 300,
                 Text = "⏱️ 30s",
                 Font = new Font("Arial", 12, FontStyle.Bold)
             };
 
+
+            // ================== RANK UI ===================
+            _lblScore = new Label
+            {
+                AutoSize = true,
+                Left = 420,
+                Text = "Rank: ...",
+                Font = new Font("Arial", 12, FontStyle.Bold)
+            };
+
+            _lblWins = new Label
+            {
+                AutoSize = true,
+                Left = 520,
+                Text = "W: 0",
+                Font = new Font("Arial", 12, FontStyle.Bold)
+            };
+
+            _lblLosses = new Label
+            {
+                AutoSize = true,
+                Left = 600,
+                Text = "L: 0",
+                Font = new Font("Arial", 12, FontStyle.Bold)
+            };
+
+            // ================== ADD UI ===================
+
             top.Controls.Add(_lblTurn);
             top.Controls.Add(_lblMark);
             top.Controls.Add(_lblTimer);
+
+            top.Controls.Add(_lblScore);
+            top.Controls.Add(_lblWins);
+            top.Controls.Add(_lblLosses);
+
             this.Controls.Add(top);
 
+
             // ====== PANEL VẼ BÀN CỜ ======
+
             _canvas = new Panel
             {
                 Dock = DockStyle.Left,
@@ -71,6 +121,11 @@ namespace Client.Forms
                 BackColor = Color.White
             };
             this.Controls.Add(_canvas);
+            typeof(Panel).GetProperty(
+                 "DoubleBuffered",
+                  System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+                )?.SetValue(_canvas, true, null);
+
 
             // ====== RENDER + GAME LOOP ======
             _renderer = new GameRenderer(_canvas, _board);
@@ -112,7 +167,18 @@ namespace Client.Forms
                 _renderer.Refresh();
             }));
 
+
             // hiện tại vẫn dùng tên mặc định của Windows
+
+            // ================== RANK UPDATE ===================
+            _net.OnRankUpdate += (score, wins, losses) => this.BeginInvoke(new Action(() =>
+            {
+                _lblScore.Text = $"Rank: {score}";
+                _lblWins.Text = $"W: {wins}";
+                _lblLosses.Text = $"L: {losses}";
+            }));
+
+
             _net.ConnectAndJoin(Environment.UserName);
 
             // xử lý click chuột trên bàn cờ
@@ -131,6 +197,7 @@ namespace Client.Forms
                 _net.SendMove(cell.Value.row, cell.Value.col);
             };
         }
+
 
         // ====== HÀM XỬ LÝ NÚT CONNECT (UI) ======
         private void btnConnect_Click(object? sender, EventArgs e)
@@ -172,7 +239,9 @@ namespace Client.Forms
             }
         }
 
-        // xử lý khi close game
+
+        // xu ly khi close game
+
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             _loop?.Stop();

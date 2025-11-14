@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using System.Timers;
+using Server.Model;
+using Server.Game;
 
 namespace Server.Game
 {
@@ -11,9 +13,12 @@ namespace Server.Game
         private readonly List<ClientRef> _players = new();
         private string _nextTurn = "X";
         private string? _winner = null;
-        // diem time
+
         private System.Timers.Timer? _turnTimer;
         private int _remainingTime = 30;
+
+        // auto move đếm số lần tự đánh
+        private int _autoMoves = 0;
 
         public GameRoom(string id) => Id = id;
 
@@ -56,16 +61,21 @@ namespace Server.Game
             Array.Clear(_board, 0, _board.Length);
             _winner = null;
             _nextTurn = "X";
+            _autoMoves = 0;
+
             Console.WriteLine($"🔄 Phòng {Id} bắt đầu ván mới!");
             BroadcastBoard();
             StartTurnTimer();
         }
+
         // time 30s
         private void StartTurnTimer()
         {
             _turnTimer?.Stop();
             _remainingTime = 30;
+
             _turnTimer = new System.Timers.Timer(1000);
+            _turnTimer.AutoReset = true;  // ⭐ FIX QUAN TRỌNG NHẤT
             _turnTimer.Elapsed += (s, e) =>
             {
                 _remainingTime--;
@@ -74,19 +84,14 @@ namespace Server.Game
                 if (_remainingTime <= 0)
                 {
                     _turnTimer.Stop();
-                    string loser = _nextTurn;
-                    _winner = (loser == "X") ? "O" : "X";
-                    Console.WriteLine($"⏰ {_winner} thắng vì {_nextTurn} hết thời gian!");
-                    BroadcastBoard();
-
-                    // Reset sau 3s
-                    Task.Delay(3000).ContinueWith(_ => StartNewGame());
+                    Console.WriteLine($"⏰ {_nextTurn} hết thời gian → auto move");
+                    AutoMove();
                 }
             };
+
             _turnTimer.Start();
         } // done
 
-        // gui time con lai
         private void BroadcastTimer()
         {
             var msg = new
@@ -98,6 +103,131 @@ namespace Server.Game
             string json = JsonSerializer.Serialize(msg);
             foreach (var p in _players)
                 p.SendJsonLine?.Invoke(json);
+        }
+
+        // auto đánh thay người chơi hết giờ
+        private void AutoMove()
+        {
+            int mark = _nextTurn == "X" ? 1 : 2;
+            int enemy = mark == 1 ? 2 : 1;
+
+            if (FindBlockMove(enemy, out int br, out int bc))
+            {
+                MakeAutoMove(br, bc, mark);
+                return;
+            }
+
+            if (FindNearMove(mark, out int nr, out int nc))
+            {
+                MakeAutoMove(nr, nc, mark);
+                return;
+            }
+
+            MakeAutoMove(Size / 2, Size / 2, mark);
+        }
+
+        private void MakeAutoMove(int r, int c, int mark)
+        {
+            if (_board[r, c] == 0)
+            {
+                _board[r, c] = mark;
+                _autoMoves++;
+
+                Console.WriteLine($"AutoMove cho {_nextTurn}: [{r},{c}]  ({_autoMoves}/3)");
+
+                if (_autoMoves >= 3)
+                {
+                    string loser = _nextTurn;
+                    _winner = loser == "X" ? "O" : "X";
+
+                    UpdateRankAfterMatch(_winner);
+                    BroadcastBoard();
+
+                    Task.Delay(3000).ContinueWith(_ => StartNewGame());
+                    return;
+                }
+
+                _nextTurn = _nextTurn == "X" ? "O" : "X";
+                BroadcastBoard();
+                StartTurnTimer();
+            }
+        }
+
+        private bool FindBlockMove(int enemy, out int br, out int bc)
+        {
+            int[][] dirs =
+            {
+                new[]{1,0},
+                new[]{0,1},
+                new[]{1,1},
+                new[]{1,-1}
+            };
+
+            for (int r = 0; r < Size; r++)
+            {
+                for (int c = 0; c < Size; c++)
+                {
+                    if (_board[r, c] != enemy) continue;
+
+                    foreach (var d in dirs)
+                    {
+                        int rr = r + d[0];
+                        int cc = c + d[1];
+
+                        if (rr >= 0 && rr < Size && cc >= 0 && cc < Size)
+                        {
+                            if (_board[rr, cc] == 0)
+                            {
+                                br = rr;
+                                bc = cc;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            br = bc = -1;
+            return false;
+        }
+
+        private bool FindNearMove(int mark, out int nr, out int nc)
+        {
+            int[][] around =
+            {
+                new[]{1,0}, new[]{-1,0},
+                new[]{0,1}, new[]{0,-1},
+                new[]{1,1}, new[]{1,-1},
+                new[]{-1,1}, new[]{-1,-1}
+            };
+
+            for (int r = 0; r < Size; r++)
+            {
+                for (int c = 0; c < Size; c++)
+                {
+                    if (_board[r, c] == mark)
+                    {
+                        foreach (var a in around)
+                        {
+                            int rr = r + a[0];
+                            int cc = c + a[1];
+
+                            if (rr >= 0 && rr < Size && cc >= 0 && cc < Size)
+                            {
+                                if (_board[rr, cc] == 0)
+                                {
+                                    nr = rr;
+                                    nc = cc;
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            nr = nc = -1;
+            return false;
         }
 
         // ham logic ko duoc dung vao " trinh"
@@ -116,17 +246,21 @@ namespace Server.Game
             {
                 _winner = MarkSymbol(mark);
                 Console.WriteLine($"🎉 Người thắng phòng {Id}: {_winner}");
+
                 _turnTimer?.Stop();
+
+                // cập nhật rank
+                UpdateRankAfterMatch(_winner);
+
                 BroadcastBoard();
 
-                // reset game sau 3s
                 Task.Delay(3000).ContinueWith(_ => StartNewGame());
             }
             else
             {
                 _nextTurn = (_nextTurn == "X") ? "O" : "X";
                 BroadcastBoard();
-                StartTurnTimer(); 
+                StartTurnTimer();
             }
         }
 
@@ -153,7 +287,46 @@ namespace Server.Game
                 p.SendJsonLine?.Invoke(json);
         }
 
-        // kiem tra thang client di x hay o
+        // rank
+        private void UpdateRankAfterMatch(string winner)
+        {
+            var pX = _players.ElementAtOrDefault(0);
+            var pO = _players.ElementAtOrDefault(1);
+
+            if (pX == null || pO == null) return;
+
+            if (winner == "X")
+            {
+                RankManager.AddWin(pX.PlayerId);
+                RankManager.AddLoss(pO.PlayerId);
+            }
+            else
+            {
+                RankManager.AddWin(pO.PlayerId);
+                RankManager.AddLoss(pX.PlayerId);
+            }
+
+            BroadcastRank();
+        }
+
+        private void BroadcastRank()
+        {
+            foreach (var p in _players)
+            {
+                var info = RankManager.Get(p.PlayerId);
+
+                var msg = new
+                {
+                    Action = "RANK",
+                    Score = info.Score,
+                    Wins = info.Wins,
+                    Losses = info.Losses
+                };
+
+                p.SendJsonLine?.Invoke(JsonSerializer.Serialize(msg));
+            }
+        }
+
         private int MarkOf(string pid)
         {
             if (_players.Count == 0) return 0;

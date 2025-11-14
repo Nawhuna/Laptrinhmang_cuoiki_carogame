@@ -18,12 +18,14 @@ namespace Client.Network
         public string PlayerId { get; private set; } = "";
         public string Mark { get; private set; } = "?";
 
-       
         public event Action? OnBoardChanged;
         public event Action<string>? OnWinner;
         public event Action<string>? OnInitReceived;
         public event Action<int, string>? OnTimerUpdate;
         public event Action? OnReset;
+
+        // thêm event rank
+        public event Action<int, int, int>? OnRankUpdate;
 
         public ConnectToServer(string ip, int port, Board board)
         {
@@ -85,7 +87,8 @@ namespace Client.Network
                 case "BOARD":
                     var board = doc.RootElement.GetProperty("Board").Deserialize<int[][]>();
                     var turn = doc.RootElement.GetProperty("NextTurn").GetString() ?? "X";
-                    string? winner = doc.RootElement.TryGetProperty("Winner", out var w)
+                    string? winner =
+                        doc.RootElement.TryGetProperty("Winner", out var w)
                         && w.ValueKind != JsonValueKind.Null ? w.GetString() : null;
 
                     if (board != null)
@@ -106,6 +109,15 @@ namespace Client.Network
                 case "RESET":
                     _board.Reset();
                     OnReset?.Invoke();
+                    break;
+
+                // thêm case rank
+                case "RANK":
+                    int score = doc.RootElement.GetProperty("Score").GetInt32();
+                    int wins = doc.RootElement.GetProperty("Wins").GetInt32();
+                    int losses = doc.RootElement.GetProperty("Losses").GetInt32();
+
+                    OnRankUpdate?.Invoke(score, wins, losses);
                     break;
             }
         }
