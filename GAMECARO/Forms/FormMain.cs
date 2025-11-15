@@ -9,6 +9,7 @@ namespace Client.Forms
 {
     public partial class FormMain : Form
     {
+        private readonly string _playerName;
         // thanh phan logic
         private readonly Board _board = new();
         private GameRenderer _renderer;
@@ -28,8 +29,10 @@ namespace Client.Forms
 
         // giao dien chinh 
 
-        public FormMain()
+        public FormMain(string playerName)
         {
+            _playerName = playerName;
+
             InitializeComponent();
 
             this.Text = "Caro Online 15x15";
@@ -62,7 +65,7 @@ namespace Client.Forms
             {
                 AutoSize = true,
                 Left = 180,
-                Text = "You: ?",
+                Text = $"Player: {_playerName}",
                 Font = new Font("Arial", 12, FontStyle.Bold)
             };
 
@@ -156,7 +159,7 @@ namespace Client.Forms
 
             _net.OnInitReceived += mark => this.BeginInvoke(new Action(() =>
             {
-                _lblMark.Text = $"You: {mark}";
+                _lblMark.Text = $"Player: {_playerName} ({mark})";
             }));
 
             _net.OnTimerUpdate += (sec, turn) => this.BeginInvoke(new Action(() =>
@@ -185,7 +188,7 @@ namespace Client.Forms
             }));
 
 
-            _net.ConnectAndJoin(Environment.UserName);
+            _net.ConnectAndJoin(_playerName);
 
             // xử lý click chuột trên bàn cờ
             _canvas.MouseClick += (s, e) =>

@@ -10,7 +10,9 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Forms.FormMain());
+
+            // Chạy FormLogin trước
+            Application.Run(new Client.Forms.FormLogin());
         }
     }
 }
