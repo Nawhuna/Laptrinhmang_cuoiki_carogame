@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;        // 👈 thêm để dùng List<Point>
 using System.Drawing;
 using System.Windows.Forms;
 using Client.Game;
@@ -143,6 +144,10 @@ namespace Client.Forms
                 _lblTurn.Text = $"NextTurn: {_board.NextTurn}";
                 if (_board.Winner != null)
                     _lblTurn.Text += $"  |  Winner: {_board.Winner}";
+
+                // 👉 nếu bạn tự kiểm tra thắng ở client thì có thể
+                // gọi hàm ShowWinningLine() ở đây sau khi tìm ra 5 ô.
+
                 _renderer.Refresh();
             }));
 
@@ -167,11 +172,12 @@ namespace Client.Forms
             {
                 _lblTurn.Text = "NextTurn: X";
                 _lblTimer.Text = "⏱️ 30s";
+
+                // reset gạch đỏ nếu có
+                ShowWinningLine(null);
+
                 _renderer.Refresh();
             }));
-
-
-            // hiện tại vẫn dùng tên mặc định của Windows
 
             // ================== RANK UPDATE ===================
             _net.OnRankUpdate += (score, wins, losses) => this.BeginInvoke(new Action(() =>
@@ -201,6 +207,21 @@ namespace Client.Forms
             };
         }
 
+        // 🔴 HÀM MỚI: nhận danh sách 5 ô thắng và bảo renderer vẽ gạch đỏ
+        public void ShowWinningLine(List<Point>? winningCells)
+        {
+            if (winningCells == null || winningCells.Count < 2)
+            {
+                // xoá gạch đỏ
+                _renderer.WinningCells = null;
+            }
+            else
+            {
+                _renderer.WinningCells = winningCells;
+            }
+
+            _renderer.Refresh();
+        }
 
         // ====== HÀM XỬ LÝ NÚT CONNECT (UI) ======
         private void btnConnect_Click(object? sender, EventArgs e)
@@ -227,6 +248,11 @@ namespace Client.Forms
             txtMessage.Clear();
 
             // TODO: khi có hàm gửi chat trong ConnectToServer, sẽ gọi _net.SendChat(msg) ở đây.
+        }
+        private void btnSurrender_Click(object? sender, EventArgs e)
+        {
+            // Tạm thời chưa xử lý
+            MessageBox.Show("Bạn đã bấm Đầu hàng (chưa làm logic).");
         }
 
         // ====== THÊM DÒNG VÀO KHUNG CHAT ======
