@@ -159,7 +159,7 @@ namespace Client.Forms
             _loop = new GameLoop(this);
             _loop.Start();
 
-            // ===== KẾT NỐI SERVER (chỉ dùng các event chắc chắn có) =====
+            // ===== KẾT NỐI SERVER =====
             _net = new ConnectToServer("127.0.0.1", 9000, _board);
 
             _net.OnBoardChanged += () => this.BeginInvoke(new Action(() =>
@@ -202,6 +202,16 @@ namespace Client.Forms
                 _lblLosses.Text = $"❌ L: {losses}";
             }));
 
+            // nhận chat từ server
+            _net.OnChatReceived += (player, message) =>
+            {
+                this.BeginInvoke(new Action(() =>
+                {
+                    if (player == _playerName) return;
+                    AppendChat($"{player}: {message}");
+                }));
+            };
+
             // auto join với tên hiện tại
             _net.ConnectAndJoin(_playerName);
 
@@ -229,6 +239,7 @@ namespace Client.Forms
             _renderer.Refresh();
         }
 
+        // ===== VẼ CARO GAME (panelTitle) =====
         private void PanelTitle_Paint(object sender, PaintEventArgs e)
         {
             var g = e.Graphics;
@@ -239,7 +250,7 @@ namespace Client.Forms
 
             SizeF size = g.MeasureString(text, font);
 
-            // 🔥 DỊCH CHỮ QUA TRÁI 20PX CHO ĐẸP
+            // dịch chữ qua trái 20px cho cân
             float x = (panelTitle.Width - size.Width) / 2 - 20;
             float y = 5;
 
@@ -261,9 +272,8 @@ namespace Client.Forms
                 if (c != ' ') useRed = !useRed;
             }
 
-            // ❌ BỎ GẠCH CHÂN
+            // Bỏ gạch chân (không vẽ line nữa)
         }
-
 
         // ===== NÚT GỬI CHAT =====
         private void btnSend_Click(object? sender, EventArgs e)
@@ -271,12 +281,12 @@ namespace Client.Forms
             string msg = txtMessage.Text.Trim();
             if (string.IsNullOrEmpty(msg)) return;
 
-            // tạm thời chỉ chat local trong khung chat
+            // gửi lên server
+            _net.SendChat(msg);
+
+            // hiện luôn bên client
             AppendChat($"You: {msg}");
             txtMessage.Clear();
-
-            // khi nào ConnectToServer có hàm SendChat, có thể thêm:
-            // _net.SendChat(msg);
         }
 
         // ===== NÚT ĐẦU HÀNG =====
@@ -291,10 +301,11 @@ namespace Client.Forms
 
             if (confirm == DialogResult.Yes)
             {
-                AppendChat("[SYSTEM] Bạn đã đầu hàng.");
+                // gửi đầu hàng lên server
+                _net.SendSurrender();
 
-                // Khi nào ConnectToServer có hàm SendSurrender, có thể thêm:
-                // _net.SendSurrender();
+                // log vào khung chat
+                AppendChat("[SYSTEM] Bạn đã đầu hàng.");
             }
         }
 
