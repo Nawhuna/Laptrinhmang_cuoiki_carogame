@@ -58,6 +58,11 @@ namespace Server.Game
 
         private void StartNewGame()
         {
+            if (_players.Count < 2)
+            {
+                Console.WriteLine($"⏳ Phòng {Id} chưa đủ 2 người → chưa thể bắt đầu ván mới.");
+                return;
+            }
             Array.Clear(_board, 0, _board.Length);
             _winner = null;
             _nextTurn = "X";
@@ -71,11 +76,18 @@ namespace Server.Game
         // time 30s
         private void StartTurnTimer()
         {
+
+            if (_players.Count < 2)
+            {
+                Console.WriteLine($"⏳ Phòng {Id} chưa đủ 2 người → không chạy timer.");
+                return;
+            }
+
             _turnTimer?.Stop();
             _remainingTime = 30;
 
             _turnTimer = new System.Timers.Timer(1000);
-            _turnTimer.AutoReset = true;  // ⭐ FIX QUAN TRỌNG NHẤT
+            _turnTimer.AutoReset = true; 
             _turnTimer.Elapsed += (s, e) =>
             {
                 _remainingTime--;
@@ -233,6 +245,22 @@ namespace Server.Game
         // ham logic ko duoc dung vao " trinh"
         public void HandleMove(string pid, int x, int y)
         {
+            if (_players.Count < 2)
+            {
+                Console.WriteLine($"⚠️ Phòng {Id} chưa đủ 2 người → không cho đánh.");
+
+                var warn = new
+                {
+                    Action = "NOT_READY",
+                    Message = "Phòng chưa đủ 2 người. Không thể đánh!"
+                };
+                // gui cho thang click
+                var p = _players.FirstOrDefault(x => x.PlayerId == pid);
+                p?.SendJsonLine?.Invoke(JsonSerializer.Serialize(warn));
+
+                return;
+            }
+
             if (_winner != null) return;
             if (x < 0 || y < 0 || x >= Size || y >= Size) return;
 

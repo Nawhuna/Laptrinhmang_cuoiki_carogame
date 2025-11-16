@@ -119,6 +119,11 @@ namespace Client.Network
 
                     OnRankUpdate?.Invoke(score, wins, losses);
                     break;
+
+                case "NOT_READY":
+                    string msg = doc.RootElement.GetProperty("Message").GetString() ?? "Chưa đủ người!";
+                    MessageBox.Show(msg, "⚠️ Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    break;
             }
         }
 
