@@ -66,6 +66,7 @@ namespace Server.Network
         private void Process(string json)
         {
             using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
             string action = doc.RootElement.GetProperty("Action").GetString() ?? "";
 
             switch (action)
@@ -75,6 +76,7 @@ namespace Server.Network
                         ? nProp.GetString() ?? "Player"
                         : "Player";
                     _self.SendJsonLine = SendJsonLine;
+                    _self.PlayerId = Guid.NewGuid().ToString();
                     _room = _gm.AssignRoom(_self);
                     break;
 
@@ -84,6 +86,22 @@ namespace Server.Network
                     int y = doc.RootElement.GetProperty("Y").GetInt32();
                     _room.HandleMove(_self.PlayerId, x, y);
                     break;
+
+                case "CHAT":
+                    {
+                        string pid = root.GetProperty("PlayerId").GetString() ?? "";
+                        string msg = root.GetProperty("Message").GetString() ?? "";
+
+                        _room?.BroadcastChat(pid, msg);
+                    }
+                    break;
+
+                case "SURRENDER":
+                    {
+                        string pid = root.GetProperty("PlayerId").GetString() ?? "";
+                        _room?.HandleSurrender(pid);
+                        break;
+                    }
             }
         }
 

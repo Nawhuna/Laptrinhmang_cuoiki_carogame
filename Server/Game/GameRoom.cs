@@ -360,6 +360,62 @@ namespace Server.Game
             if (_players.Count == 0) return 0;
             return _players.First().PlayerId == pid ? 1 : 2;
         }
+        // chat
+        public void BroadcastChat(string playerId, string message)
+        {
+            var player = _players.FirstOrDefault(p => p.PlayerId == playerId);
+            string name = player?.Name ?? "Unknown";
+
+            var msgObj = new
+            {
+                Action = "CHAT",
+                From = name,
+                Message = message
+            };
+
+            string json = JsonSerializer.Serialize(msgObj);
+
+            foreach (var p in _players)
+                p.SendJsonLine?.Invoke(json);
+
+            Console.WriteLine($" Chat [{name}]: {message}");
+        }
+        // gg
+        public void HandleSurrender(string pid)
+        {
+            if (_players.Count < 2) return;
+            if (_winner != null) return;
+
+            var loser = _players.FirstOrDefault(p => p.PlayerId == pid);
+            if (loser == null) return;
+
+            string loserMark = MarkOf(pid) == 1 ? "X" : "O";
+            string winnerMark = loserMark == "X" ? "O" : "X";
+
+            _winner = winnerMark;
+
+            Console.WriteLine($"🏳️ Người chơi {loser.Name} đầu hàng → {winnerMark} thắng!");
+
+            _turnTimer?.Stop();
+
+            UpdateRankAfterMatch(_winner);
+
+
+            var msg = new
+            {
+                Action = "SURRENDER",
+                Loser = loser.Name,
+                Winner = winnerMark
+            };
+
+            string json = JsonSerializer.Serialize(msg);
+            foreach (var p in _players)
+                p.SendJsonLine?.Invoke(json);
+            BroadcastBoard();
+
+            Task.Delay(3000).ContinueWith(_ => StartNewGame());
+        }
+
 
         private string MarkSymbol(int mark) => mark == 1 ? "X" : "O";
     }

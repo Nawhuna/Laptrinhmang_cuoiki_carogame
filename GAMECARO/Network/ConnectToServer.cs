@@ -1,8 +1,9 @@
-﻿using System.Net.Sockets;
+﻿using Client.Game;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using Client.Game;
+using System.Windows.Forms;
 
 namespace Client.Network
 {
@@ -23,6 +24,8 @@ namespace Client.Network
         public event Action<string>? OnInitReceived;
         public event Action<int, string>? OnTimerUpdate;
         public event Action? OnReset;
+        public event Action<string, string>? OnChatReceived;
+
 
         // thêm event rank
         public event Action<int, int, int>? OnRankUpdate;
@@ -124,6 +127,22 @@ namespace Client.Network
                     string msg = doc.RootElement.GetProperty("Message").GetString() ?? "Chưa đủ người!";
                     MessageBox.Show(msg, "⚠️ Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     break;
+
+                case "CHAT":
+                    {
+                        string player = doc.RootElement.GetProperty("From").GetString() ?? "Unknown";
+                        string chatmsg = doc.RootElement.GetProperty("Message").GetString() ?? "";
+
+                        OnChatReceived?.Invoke(player, chatmsg);
+                    }
+                    break;
+
+                case "SURRENDER":
+                    {
+                        var winBySurrender = doc.RootElement.GetProperty("Winner").GetString() ?? "";
+                        OnWinner?.Invoke(winBySurrender);
+                    }
+                    break;
             }
         }
 
@@ -132,6 +151,24 @@ namespace Client.Network
             SendJson(new { Action = "MOVE", PlayerId, X = col, Y = row });
         }
 
+        public void SendChat(string message)
+        {
+            SendJson(new
+            {
+                Action = "CHAT",
+                PlayerId = PlayerId,
+                Message = message
+            });
+        }// done
+        // dau hang
+        public void SendSurrender()
+        {
+            SendJson(new
+            {
+                Action = "SURRENDER",
+                PlayerId = PlayerId
+            });
+        }// done
         private void SendJson(object o)
         {
             if (_client == null) return;
@@ -145,5 +182,7 @@ namespace Client.Network
             try { _cts?.Cancel(); _client?.Shutdown(SocketShutdown.Both); } catch { }
             try { _client?.Close(); } catch { }
         }
+
+
     }
 }

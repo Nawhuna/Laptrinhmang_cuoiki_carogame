@@ -26,6 +26,7 @@ namespace Client.Forms
         private Label _lblScore;
         private Label _lblWins;
         private Label _lblLosses;
+    
 
         // giao dien chinh 
 
@@ -186,6 +187,15 @@ namespace Client.Forms
                 _lblWins.Text = $"W: {wins}";
                 _lblLosses.Text = $"L: {losses}";
             }));
+            // chat
+            _net.OnChatReceived += (player, message) =>
+            {
+                this.BeginInvoke(new Action(() =>
+                {
+                    if (player == _playerName) return;
+                    AppendChat($"{player}: {message}");
+                }));
+            };
 
 
             _net.ConnectAndJoin(_playerName);
@@ -242,6 +252,7 @@ namespace Client.Forms
         {
             string msg = txtMessage.Text.Trim();
             if (string.IsNullOrEmpty(msg)) return;
+            _net.SendChat(msg);
 
             // hiện tại mới chat local cho dễ test
             AppendChat($"You: {msg}");
@@ -249,10 +260,20 @@ namespace Client.Forms
 
             // TODO: khi có hàm gửi chat trong ConnectToServer, sẽ gọi _net.SendChat(msg) ở đây.
         }
+        // dau hàng
         private void btnSurrender_Click(object? sender, EventArgs e)
         {
-            // Tạm thời chưa xử lý
-            MessageBox.Show("Bạn đã bấm Đầu hàng (chưa làm logic).");
+            var confirm = MessageBox.Show(
+                "Bạn có chắc muốn đầu hàng không?",
+                "Đầu hàng",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (confirm == DialogResult.Yes)
+            {
+                _net.SendSurrender();
+            }
         }
 
         // ====== THÊM DÒNG VÀO KHUNG CHAT ======
