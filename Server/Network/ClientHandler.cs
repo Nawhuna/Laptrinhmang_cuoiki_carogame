@@ -102,6 +102,27 @@ namespace Server.Network
                         _room?.HandleSurrender(pid);
                         break;
                     }
+
+                case "LEADERBOARD":
+                    {
+                        var topPlayers = RankManager.GetTopPlayers(10);
+                        var leaderboardData = topPlayers.Select(p => new
+                        {
+                            PlayerId = p.PlayerId,
+                            Score = p.Score,
+                            Wins = p.Wins,
+                            Losses = p.Losses
+                        }).ToList();
+
+                        var response = new
+                        {
+                            Action = "LEADERBOARD",
+                            Players = leaderboardData
+                        };
+
+                        SendJsonLine(JsonSerializer.Serialize(response));
+                        break;
+                    }
             }
         }
 

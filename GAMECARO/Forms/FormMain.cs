@@ -187,6 +187,13 @@ namespace Client.Forms
                 _lblWins.Text = $"W: {wins}";
                 _lblLosses.Text = $"L: {losses}";
             }));
+
+            // ================== LEADERBOARD UPDATE ===================
+            _net.OnLeaderboardReceived += leaderboard => this.BeginInvoke(new Action(() =>
+            {
+                ShowLeaderboard(leaderboard);
+            }));
+
             // chat
             _net.OnChatReceived += (player, message) =>
             {
@@ -274,6 +281,34 @@ namespace Client.Forms
             {
                 _net.SendSurrender();
             }
+        }
+
+        // xem bảng xếp hạng
+        private void btnLeaderboard_Click(object? sender, EventArgs e)
+        {
+            _net.RequestLeaderboard();
+        }
+
+        // hiển thị bảng xếp hạng
+        private void ShowLeaderboard(List<Client.Network.LeaderboardEntry> leaderboard)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("🏆 BẢNG XẾP HẠNG TOP 10 🏆");
+            sb.AppendLine("================================");
+            sb.AppendLine(string.Format("{0,-5} {1,-15} {2,-8} {3,-8}", "Hạng", "Điểm", "Thắng", "Thua"));
+            sb.AppendLine("================================");
+
+            for (int i = 0; i < leaderboard.Count; i++)
+            {
+                var player = leaderboard[i];
+                sb.AppendLine(string.Format("{0,-5} {1,-15} {2,-8} {3,-8}", 
+                    $"#{i + 1}", 
+                    player.Score, 
+                    player.Wins, 
+                    player.Losses));
+            }
+
+            MessageBox.Show(sb.ToString(), "Bảng xếp hạng", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         // ====== THÊM DÒNG VÀO KHUNG CHAT ======

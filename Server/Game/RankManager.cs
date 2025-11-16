@@ -28,5 +28,13 @@ namespace Server.Game
             info.Score -= 10;
             if (info.Score < 0) info.Score = 0;
         }
+
+        public static List<RankInfo> GetTopPlayers(int count = 10)
+        {
+            return _ranks.Values
+                .OrderByDescending(r => r.Score)
+                .Take(count)
+                .ToList();
+        }
     }
 }
