@@ -16,6 +16,7 @@ namespace Client.Forms
         private TextBox txtMessage;
         private Button btnSend;
         private Button btnSurrender;   // 👈 nút đầu hàng mới
+        private Button btnLeaderboard; // 👈 nút xem bảng xếp hạng
 
         /// <summary>
         ///  Clean up any resources being used.
@@ -41,6 +42,7 @@ namespace Client.Forms
             this.txtMessage = new TextBox();
             this.btnSend = new Button();
             this.btnSurrender = new Button();
+            this.btnLeaderboard = new Button();
 
             this.SuspendLayout();
             // 
@@ -115,6 +117,15 @@ namespace Client.Forms
             this.btnSurrender.UseVisualStyleBackColor = true;
             this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
 
+            // btnLeaderboard
+            this.btnLeaderboard.Location = new Point(400, 550);
+            this.btnLeaderboard.Name = "btnLeaderboard";
+            this.btnLeaderboard.Size = new Size(120, 23);
+            this.btnLeaderboard.TabIndex = 8;
+            this.btnLeaderboard.Text = "Bảng xếp hạng";
+            this.btnLeaderboard.UseVisualStyleBackColor = true;
+            this.btnLeaderboard.Click += new System.EventHandler(this.btnLeaderboard_Click);
+
             // 
             // FormMain
             // 
@@ -134,6 +145,7 @@ namespace Client.Forms
             this.Controls.Add(this.txtMessage);
             this.Controls.Add(this.btnSend);
             this.Controls.Add(this.btnSurrender);
+            this.Controls.Add(this.btnLeaderboard);
             this.ResumeLayout(false);
             this.PerformLayout();
         }

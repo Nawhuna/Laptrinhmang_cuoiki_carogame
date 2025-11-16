@@ -7,6 +7,14 @@ using System.Windows.Forms;
 
 namespace Client.Network
 {
+    public class LeaderboardEntry
+    {
+        public string PlayerId { get; set; } = "";
+        public int Score { get; set; }
+        public int Wins { get; set; }
+        public int Losses { get; set; }
+    }
+
     public class ConnectToServer
     {
         private readonly string _ip;
@@ -29,6 +37,9 @@ namespace Client.Network
 
         // thêm event rank
         public event Action<int, int, int>? OnRankUpdate;
+        
+        // thêm event leaderboard
+        public event Action<List<LeaderboardEntry>>? OnLeaderboardReceived;
 
         public ConnectToServer(string ip, int port, Board board)
         {
@@ -143,6 +154,26 @@ namespace Client.Network
                         OnWinner?.Invoke(winBySurrender);
                     }
                     break;
+
+                case "LEADERBOARD":
+                    {
+                        var playersJson = doc.RootElement.GetProperty("Players");
+                        var leaderboard = new List<LeaderboardEntry>();
+                        
+                        foreach (var playerElement in playersJson.EnumerateArray())
+                        {
+                            leaderboard.Add(new LeaderboardEntry
+                            {
+                                PlayerId = playerElement.GetProperty("PlayerId").GetString() ?? "",
+                                Score = playerElement.GetProperty("Score").GetInt32(),
+                                Wins = playerElement.GetProperty("Wins").GetInt32(),
+                                Losses = playerElement.GetProperty("Losses").GetInt32()
+                            });
+                        }
+
+                        OnLeaderboardReceived?.Invoke(leaderboard);
+                    }
+                    break;
             }
         }
 
@@ -169,6 +200,12 @@ namespace Client.Network
                 PlayerId = PlayerId
             });
         }// done
+
+        public void RequestLeaderboard()
+        {
+            SendJson(new { Action = "LEADERBOARD" });
+        }
+
         private void SendJson(object o)
         {
             if (_client == null) return;
