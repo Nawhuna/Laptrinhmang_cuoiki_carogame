@@ -1,24 +1,24 @@
-﻿using System.Windows.Forms;
-using System.Drawing;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace Client.Forms
 {
     partial class FormMain
     {
-        private System.ComponentModel.IContainer? components = null;
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
 
-        // 🔹 Các control UI
-        private TextBox txtPlayerName;
-        private Button btnConnect;
-        private Label lblYou;
-        private Label lblEnemy;
+        // các control bên phải
+        private Panel panelTitle;
         private TextBox txtChat;
         private TextBox txtMessage;
         private Button btnSend;
-        private Button btnSurrender;   // 👈 nút đầu hàng mới
+        private Button btnSurrender;
 
         /// <summary>
-        ///  Clean up any resources being used.
+        /// Clean up any resources being used.
         /// </summary>
         protected override void Dispose(bool disposing)
         {
@@ -33,107 +33,85 @@ namespace Client.Forms
 
         private void InitializeComponent()
         {
-            this.txtPlayerName = new TextBox();
-            this.btnConnect = new Button();
-            this.lblYou = new Label();
-            this.lblEnemy = new Label();
-            this.txtChat = new TextBox();
-            this.txtMessage = new TextBox();
-            this.btnSend = new Button();
-            this.btnSurrender = new Button();
-
+            this.components = new System.ComponentModel.Container();
+            this.panelTitle = new System.Windows.Forms.Panel();
+            this.txtChat = new System.Windows.Forms.TextBox();
+            this.txtMessage = new System.Windows.Forms.TextBox();
+            this.btnSend = new System.Windows.Forms.Button();
+            this.btnSurrender = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // txtPlayerName
+            // panelTitle  (CARO GAME)
             // 
-            this.txtPlayerName.Location = new Point(400, 50);   // dưới thanh top, bên phải bàn cờ
-            this.txtPlayerName.Name = "txtPlayerName";
-            this.txtPlayerName.Size = new Size(150, 23);
-            this.txtPlayerName.TabIndex = 0;
-            this.txtPlayerName.Text = "Nam";
-            // 
-            // btnConnect
-            // 
-            this.btnConnect.Location = new Point(560, 49);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new Size(75, 23);
-            this.btnConnect.TabIndex = 1;
-            this.btnConnect.Text = "Connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
-            // 
-            // lblYou
-            // 
-            this.lblYou.AutoSize = true;
-            this.lblYou.Location = new Point(400, 80);
-            this.lblYou.Name = "lblYou";
-            this.lblYou.Size = new Size(60, 15);
-            this.lblYou.TabIndex = 2;
-            this.lblYou.Text = "You: N/A";
-            // 
-            // lblEnemy
-            // 
-            this.lblEnemy.AutoSize = true;
-            this.lblEnemy.Location = new Point(400, 100);
-            this.lblEnemy.Name = "lblEnemy";
-            this.lblEnemy.Size = new Size(76, 15);
-            this.lblEnemy.TabIndex = 3;
-            this.lblEnemy.Text = "Enemy: N/A";
+            this.panelTitle.Location = new System.Drawing.Point(380, 50);
+            this.panelTitle.Name = "panelTitle";
+            this.panelTitle.Size = new System.Drawing.Size(430, 55);
+            this.panelTitle.BackColor = System.Drawing.Color.Transparent;
+            this.panelTitle.Paint += new System.Windows.Forms.PaintEventHandler(this.PanelTitle_Paint);
             // 
             // txtChat
             // 
-            this.txtChat.Location = new Point(400, 130);
+            this.txtChat.Location = new System.Drawing.Point(400, 110);
             this.txtChat.Multiline = true;
             this.txtChat.Name = "txtChat";
             this.txtChat.ReadOnly = true;
-            this.txtChat.ScrollBars = ScrollBars.Vertical;
-            this.txtChat.Size = new Size(370, 380);
-            this.txtChat.TabIndex = 4;
+            this.txtChat.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtChat.Size = new System.Drawing.Size(370, 380);
+            this.txtChat.TabIndex = 0;
             // 
             // txtMessage
             // 
-            this.txtMessage.Location = new Point(400, 520);
+            this.txtMessage.Location = new System.Drawing.Point(400, 520);
             this.txtMessage.Name = "txtMessage";
-            this.txtMessage.Size = new Size(260, 23);
-            this.txtMessage.TabIndex = 5;
+            this.txtMessage.Size = new System.Drawing.Size(260, 23);
+            this.txtMessage.TabIndex = 1;
             // 
             // btnSend
             // 
-            this.btnSend.Location = new Point(670, 519);
+            this.btnSend.Location = new System.Drawing.Point(670, 516);
             this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new Size(100, 23);
-            this.btnSend.TabIndex = 6;
-            this.btnSend.Text = "Send";
-            this.btnSend.UseVisualStyleBackColor = true;
+            this.btnSend.Size = new System.Drawing.Size(100, 30);
+            this.btnSend.TabIndex = 2;
+            this.btnSend.Text = "Gửi";
+            this.btnSend.BackColor = System.Drawing.Color.FromArgb(60, 60, 60);
+            this.btnSend.ForeColor = System.Drawing.Color.White;
+            this.btnSend.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSend.FlatAppearance.BorderSize = 0;
+            this.btnSend.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnSend.UseVisualStyleBackColor = false;
             this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
+            // 
             // btnSurrender
-            this.btnSurrender.Location = new Point(670, 550);   // 👈 vị trí, muốn thì đổi
+            // 
+            this.btnSurrender.Location = new System.Drawing.Point(670, 552);
             this.btnSurrender.Name = "btnSurrender";
-            this.btnSurrender.Size = new Size(100, 23);
-            this.btnSurrender.TabIndex = 7;
+            this.btnSurrender.Size = new System.Drawing.Size(100, 30);
+            this.btnSurrender.TabIndex = 3;
             this.btnSurrender.Text = "Đầu hàng";
-            this.btnSurrender.UseVisualStyleBackColor = true;
+            this.btnSurrender.BackColor = System.Drawing.Color.FromArgb(220, 0, 0);
+            this.btnSurrender.ForeColor = System.Drawing.Color.White;
+            this.btnSurrender.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSurrender.FlatAppearance.BorderSize = 0;
+            this.btnSurrender.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnSurrender.UseVisualStyleBackColor = false;
             this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
-
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new SizeF(7F, 15F);
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(800, 600);   // rộng hơn cho chat
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(800, 600);
             this.Name = "FormMain";
             this.Text = "Caro Online 15x15";
             this.Load += new System.EventHandler(this.FormMain_Load);
 
-            // 🔹 Thêm control vào form
-            this.Controls.Add(this.txtPlayerName);
-            this.Controls.Add(this.btnConnect);
-            this.Controls.Add(this.lblYou);
-            this.Controls.Add(this.lblEnemy);
+            // thêm control vào form
+            this.Controls.Add(this.panelTitle);
             this.Controls.Add(this.txtChat);
             this.Controls.Add(this.txtMessage);
             this.Controls.Add(this.btnSend);
             this.Controls.Add(this.btnSurrender);
+
             this.ResumeLayout(false);
             this.PerformLayout();
         }
