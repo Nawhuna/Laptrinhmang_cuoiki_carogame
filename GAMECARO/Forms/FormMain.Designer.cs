@@ -7,19 +7,13 @@ namespace Client.Forms
     {
         private System.ComponentModel.IContainer? components = null;
 
-        // 🔹 Các control UI
-        private TextBox txtPlayerName;
-        private Button btnConnect;
-        private Label lblYou;
-        private Label lblEnemy;
+        // UI bên phải
+        private RichTextBox lblTitle;
         private TextBox txtChat;
         private TextBox txtMessage;
         private Button btnSend;
-        private Button btnSurrender;   // 👈 nút đầu hàng mới
+        private Button btnSurrender;
 
-        /// <summary>
-        ///  Clean up any resources being used.
-        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -33,109 +27,96 @@ namespace Client.Forms
 
         private void InitializeComponent()
         {
-            this.txtPlayerName = new TextBox();
-            this.btnConnect = new Button();
-            this.lblYou = new Label();
-            this.lblEnemy = new Label();
-            this.txtChat = new TextBox();
-            this.txtMessage = new TextBox();
-            this.btnSend = new Button();
-            this.btnSurrender = new Button();
-
-            this.SuspendLayout();
+            lblTitle = new RichTextBox();
+            txtChat = new TextBox();
+            txtMessage = new TextBox();
+            btnSend = new Button();
+            btnSurrender = new Button();
+            SuspendLayout();
             // 
-            // txtPlayerName
+            // lblTitle
             // 
-            this.txtPlayerName.Location = new Point(400, 50);   // dưới thanh top, bên phải bàn cờ
-            this.txtPlayerName.Name = "txtPlayerName";
-            this.txtPlayerName.Size = new Size(150, 23);
-            this.txtPlayerName.TabIndex = 0;
-            this.txtPlayerName.Text = "Nam";
-            // 
-            // btnConnect
-            // 
-            this.btnConnect.Location = new Point(560, 49);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new Size(75, 23);
-            this.btnConnect.TabIndex = 1;
-            this.btnConnect.Text = "Connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
-            // 
-            // lblYou
-            // 
-            this.lblYou.AutoSize = true;
-            this.lblYou.Location = new Point(400, 80);
-            this.lblYou.Name = "lblYou";
-            this.lblYou.Size = new Size(60, 15);
-            this.lblYou.TabIndex = 2;
-            this.lblYou.Text = "You: N/A";
-            // 
-            // lblEnemy
-            // 
-            this.lblEnemy.AutoSize = true;
-            this.lblEnemy.Location = new Point(400, 100);
-            this.lblEnemy.Name = "lblEnemy";
-            this.lblEnemy.Size = new Size(76, 15);
-            this.lblEnemy.TabIndex = 3;
-            this.lblEnemy.Text = "Enemy: N/A";
+            lblTitle.BackColor = Color.FromArgb(242, 242, 242);
+            lblTitle.BorderStyle = BorderStyle.None;
+            lblTitle.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
+            lblTitle.Location = new Point(491, 67);
+            lblTitle.Margin = new Padding(3, 4, 3, 4);
+            lblTitle.Multiline = false;
+            lblTitle.Name = "lblTitle";
+            lblTitle.ReadOnly = true;
+            lblTitle.ScrollBars = RichTextBoxScrollBars.None;
+            lblTitle.Size = new Size(366, 53);
+            lblTitle.TabIndex = 0;
+            lblTitle.TabStop = false;
+            lblTitle.Text = "";
             // 
             // txtChat
             // 
-            this.txtChat.Location = new Point(400, 130);
-            this.txtChat.Multiline = true;
-            this.txtChat.Name = "txtChat";
-            this.txtChat.ReadOnly = true;
-            this.txtChat.ScrollBars = ScrollBars.Vertical;
-            this.txtChat.Size = new Size(370, 380);
-            this.txtChat.TabIndex = 4;
+            txtChat.Location = new Point(457, 133);
+            txtChat.Margin = new Padding(3, 4, 3, 4);
+            txtChat.Multiline = true;
+            txtChat.Name = "txtChat";
+            txtChat.ReadOnly = true;
+            txtChat.ScrollBars = ScrollBars.Vertical;
+            txtChat.Size = new Size(422, 505);
+            txtChat.TabIndex = 1;
             // 
             // txtMessage
             // 
-            this.txtMessage.Location = new Point(400, 520);
-            this.txtMessage.Name = "txtMessage";
-            this.txtMessage.Size = new Size(260, 23);
-            this.txtMessage.TabIndex = 5;
+            txtMessage.Location = new Point(457, 693);
+            txtMessage.Margin = new Padding(3, 4, 3, 4);
+            txtMessage.Name = "txtMessage";
+            txtMessage.Size = new Size(297, 27);
+            txtMessage.TabIndex = 2;
             // 
             // btnSend
             // 
-            this.btnSend.Location = new Point(670, 519);
-            this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new Size(100, 23);
-            this.btnSend.TabIndex = 6;
-            this.btnSend.Text = "Send";
-            this.btnSend.UseVisualStyleBackColor = true;
-            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
+            btnSend.BackColor = Color.FromArgb(60, 60, 60);
+            btnSend.FlatAppearance.BorderSize = 0;
+            btnSend.FlatStyle = FlatStyle.Flat;
+            btnSend.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            btnSend.ForeColor = Color.White;
+            btnSend.Location = new Point(766, 692);
+            btnSend.Margin = new Padding(3, 4, 3, 4);
+            btnSend.Name = "btnSend";
+            btnSend.Size = new Size(114, 40);
+            btnSend.TabIndex = 3;
+            btnSend.Text = "Gửi";
+            btnSend.UseVisualStyleBackColor = false;
+            btnSend.Click += btnSend_Click;
+            // 
             // btnSurrender
-            this.btnSurrender.Location = new Point(670, 550);   // 👈 vị trí, muốn thì đổi
-            this.btnSurrender.Name = "btnSurrender";
-            this.btnSurrender.Size = new Size(100, 23);
-            this.btnSurrender.TabIndex = 7;
-            this.btnSurrender.Text = "Đầu hàng";
-            this.btnSurrender.UseVisualStyleBackColor = true;
-            this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
-
+            // 
+            btnSurrender.BackColor = Color.FromArgb(220, 0, 0);
+            btnSurrender.FlatAppearance.BorderSize = 0;
+            btnSurrender.FlatStyle = FlatStyle.Flat;
+            btnSurrender.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            btnSurrender.ForeColor = Color.White;
+            btnSurrender.Location = new Point(766, 740);
+            btnSurrender.Margin = new Padding(3, 4, 3, 4);
+            btnSurrender.Name = "btnSurrender";
+            btnSurrender.Size = new Size(114, 40);
+            btnSurrender.TabIndex = 4;
+            btnSurrender.Text = "Đầu hàng";
+            btnSurrender.UseVisualStyleBackColor = false;
+            btnSurrender.Click += btnSurrender_Click;
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new SizeF(7F, 15F);
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(800, 600);   // rộng hơn cho chat
-            this.Name = "FormMain";
-            this.Text = "Caro Online 15x15";
-            this.Load += new System.EventHandler(this.FormMain_Load);
-
-            // 🔹 Thêm control vào form
-            this.Controls.Add(this.txtPlayerName);
-            this.Controls.Add(this.btnConnect);
-            this.Controls.Add(this.lblYou);
-            this.Controls.Add(this.lblEnemy);
-            this.Controls.Add(this.txtChat);
-            this.Controls.Add(this.txtMessage);
-            this.Controls.Add(this.btnSend);
-            this.Controls.Add(this.btnSurrender);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(606, 800);
+            Controls.Add(lblTitle);
+            Controls.Add(txtChat);
+            Controls.Add(txtMessage);
+            Controls.Add(btnSend);
+            Controls.Add(btnSurrender);
+            Margin = new Padding(3, 4, 3, 4);
+            Name = "FormMain";
+            Text = "Caro Online 15x15";
+            Load += FormMain_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
