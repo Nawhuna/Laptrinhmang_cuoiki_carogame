@@ -11,7 +11,7 @@ namespace Client.Game
         private readonly Board _board;
         private const int CellSize = 35;
 
-        // Point.X = col, Point.Y = row
+        // Danh sách 5 ô thắng (X = cột, Y = hàng)
         public List<Point>? WinningCells { get; set; }
 
         public GameRenderer(Panel canvas, Board board)
@@ -26,19 +26,16 @@ namespace Client.Game
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            // nếu có Winner mà chưa có WinningCells thì tự tìm 5 ô thắng
+            // Nếu đã có Winner → tự tìm 5 ô thắng
             EnsureWinningCellsComputed();
 
-            // nền trắng
-            g.Clear(Color.White);
+            g.Clear(Color.White);   // nền bàn cờ
 
             DrawBoard(g);
             DrawPieces(g);
-            // KHÔNG vẽ thêm gạch đỏ, chỉ tô nền trong DrawPiece
         }
 
-        // ================== VẼ LƯỚI ===================
-
+        // Vẽ lưới 15x15
         private void DrawBoard(Graphics g)
         {
             using var pen = new Pen(Color.FromArgb(210, 210, 210), 1f);
@@ -53,19 +50,19 @@ namespace Client.Game
             }
         }
 
-        // ================== VẼ TOÀN BỘ QUÂN CỜ ===================
-
+        // Vẽ toàn bộ quân cờ X / O trên bàn
         private void DrawPieces(Graphics g)
         {
             for (int r = 0; r < Board.Size; r++)
             {
                 for (int c = 0; c < Board.Size; c++)
                 {
-                    int cell = _board.GetCell(r, c); // 0 = trống, 1 = X, 2 = O
+                    int cell = _board.GetCell(r, c); // 0 trống – 1 X – 2 O
                     if (cell == 0) continue;
 
                     char mark = (cell == 1) ? 'X' : 'O';
 
+                    // Kiểm tra ô này có nằm trong chuỗi thắng không
                     bool isWinning = false;
                     if (WinningCells != null)
                     {
@@ -84,8 +81,7 @@ namespace Client.Game
             }
         }
 
-        // ================== VẼ 1 QUÂN X / O (GIỮ NGUYÊN STYLE) ===================
-
+        // Vẽ 1 quân X/O + nền vàng nếu là ô thắng
         private void DrawPiece(Graphics g, int row, int col, char mark, bool isWinning)
         {
             Rectangle cellRect = new Rectangle(
@@ -94,17 +90,16 @@ namespace Client.Game
                 CellSize,
                 CellSize);
 
-            // vùng quân cờ (hơi nhỏ hơn ô)
+            // Kích thước hình bên trong ô
             Rectangle pieceRect = new Rectangle(
                 cellRect.X + 6,
                 cellRect.Y + 6,
                 CellSize - 12,
                 CellSize - 12);
 
-            //  TÔ NỀN 5 Ô THẮNG
+            // Tô nền vàng cho 5 ô thắng
             if (isWinning)
             {
-                // tô gần kín ô, chừa viền lưới 1px
                 Rectangle bgRect = new Rectangle(
                     cellRect.X + 1,
                     cellRect.Y + 1,
@@ -112,48 +107,42 @@ namespace Client.Game
                     cellRect.Height - 2);
 
                 using (var backBrush = new SolidBrush(Color.FromArgb(255, 240, 100)))
-                // vàng nhạt
                 {
                     g.FillRectangle(backBrush, bgRect);
                 }
             }
 
-            // ===== PHẦN VẼ O – giữ nguyên =====
+            // Vẽ O
             if (mark == 'O' || mark == 'o')
             {
-                Color main = Color.FromArgb(0, 200, 0);     // xanh lá
-                Color shadow = Color.FromArgb(70, 0, 0, 0); // bóng mờ
+                Color main = Color.FromArgb(0, 200, 0);
+                Color shadow = Color.FromArgb(70, 0, 0, 0);
 
-                // bóng lệch nhẹ
                 Rectangle shadowCircle = new Rectangle(
                     pieceRect.X + 1,
                     pieceRect.Y + 1,
                     pieceRect.Width,
                     pieceRect.Height);
 
-                using (var shadowPen = new Pen(shadow, 5)
+                using (var shadowPen = new Pen(shadow, 5))
                 {
-                    LineJoin = LineJoin.Round,
-                    StartCap = LineCap.Round,
-                    EndCap = LineCap.Round
-                })
-                {
+                    shadowPen.LineJoin = LineJoin.Round;
+                    shadowPen.StartCap = LineCap.Round;
+                    shadowPen.EndCap = LineCap.Round;
                     g.DrawEllipse(shadowPen, shadowCircle);
                 }
 
-                using (var penO = new Pen(main, 4)
+                using (var penO = new Pen(main, 4))
                 {
-                    LineJoin = LineJoin.Round,
-                    StartCap = LineCap.Round,
-                    EndCap = LineCap.Round
-                })
-                {
+                    penO.LineJoin = LineJoin.Round;
+                    penO.StartCap = LineCap.Round;
+                    penO.EndCap = LineCap.Round;
                     g.DrawEllipse(penO, pieceRect);
                 }
             }
             else
             {
-                // ===== PHẦN VẼ X – giữ nguyên =====
+                // Vẽ X
                 Color mainColor = Color.Red;
                 Color shadowColor = Color.FromArgb(120, 0, 0, 0);
 
@@ -162,44 +151,37 @@ namespace Client.Game
                 Point p3 = new Point(pieceRect.Right, pieceRect.Top);
                 Point p4 = new Point(pieceRect.Left, pieceRect.Bottom);
 
-                // bóng lệch nhẹ xuống phải
                 Point sp1 = new Point(p1.X + 1, p1.Y + 1);
                 Point sp2 = new Point(p2.X + 1, p2.Y + 1);
                 Point sp3 = new Point(p3.X + 1, p3.Y + 1);
                 Point sp4 = new Point(p4.X + 1, p4.Y + 1);
 
-                using (var shadowPen = new Pen(shadowColor, 6)
+                using (var shadowPen = new Pen(shadowColor, 6))
                 {
-                    StartCap = LineCap.Round,
-                    EndCap = LineCap.Round,
-                    LineJoin = LineJoin.Round
-                })
-                {
+                    shadowPen.StartCap = LineCap.Round;
+                    shadowPen.EndCap = LineCap.Round;
+                    shadowPen.LineJoin = LineJoin.Round;
                     g.DrawLine(shadowPen, sp1, sp2);
                     g.DrawLine(shadowPen, sp3, sp4);
                 }
 
-                using (var mainPen = new Pen(mainColor, 4)
+                using (var mainPen = new Pen(mainColor, 4))
                 {
-                    StartCap = LineCap.Round,
-                    EndCap = LineCap.Round,
-                    LineJoin = LineJoin.Round
-                })
-                {
+                    mainPen.StartCap = LineCap.Round;
+                    mainPen.EndCap = LineCap.Round;
+                    mainPen.LineJoin = LineJoin.Round;
                     g.DrawLine(mainPen, p1, p2);
                     g.DrawLine(mainPen, p3, p4);
                 }
             }
         }
 
-        // ================== TỰ TÌM 5 Ô THẮNG ===================
-
+        // Tự tìm 5 ô thắng dựa trên Winner + dữ liệu bàn cờ
         private void EnsureWinningCellsComputed()
         {
             if (_board.Winner == null)
             {
-                // chưa có ai thắng => không tô ô nào
-                WinningCells = null;
+                WinningCells = null; // ván mới: xóa ô thắng
                 return;
             }
 
@@ -207,7 +189,7 @@ namespace Client.Game
 
             int player = _board.Winner == "X" ? 1 : 2;
 
-            // 4 hướng: ngang, dọc, chéo xuống, chéo lên
+            // 4 hướng kiểm tra
             int[,] dirs = new int[,]
             {
                 { 0, 1 },   // ngang
@@ -227,7 +209,7 @@ namespace Client.Game
                         int dr = dirs[d, 0];
                         int dc = dirs[d, 1];
 
-                        // bỏ qua nếu phía trước (ngược hướng) cũng là quân mình
+                        // bỏ nếu ô trước đó cũng là quân mình
                         int prevR = r - dr;
                         int prevC = c - dc;
                         if (prevR >= 0 && prevR < Board.Size &&
@@ -245,14 +227,14 @@ namespace Client.Game
                                cc >= 0 && cc < Board.Size &&
                                _board.GetCell(rr, cc) == player)
                         {
-                            cells.Add(new Point(cc, rr)); // X = col, Y = row
+                            cells.Add(new Point(cc, rr));
                             rr += dr;
                             cc += dc;
                         }
 
                         if (cells.Count >= 5)
                         {
-                            WinningCells = cells.GetRange(0, 5); // lấy 5 ô đầu tiên
+                            WinningCells = cells.GetRange(0, 5);
                             return;
                         }
                     }
@@ -260,7 +242,7 @@ namespace Client.Game
             }
         }
 
-        // Chuyển tọa độ chuột -> (row, col)
+        // Chuyển tọa độ chuột → vị trí ô
         public (int row, int col)? PointToCell(Point p)
         {
             int col = p.X / CellSize;
@@ -272,6 +254,7 @@ namespace Client.Game
             return null;
         }
 
+        // Yêu cầu vẽ lại panel
         public void Refresh() => _canvas.Invalidate();
     }
 }

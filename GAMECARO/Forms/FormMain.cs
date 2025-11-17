@@ -11,16 +11,16 @@ namespace Client.Forms
     {
         private readonly string _playerName;
 
-        // logic
+        // Logic game
         private readonly Board _board = new();
         private GameRenderer _renderer;
         private GameLoop _loop;
         private ConnectToServer _net;
 
-        // panel vẽ bàn cờ
+        // Panel vẽ bàn cờ
         private Panel _canvas;
 
-        // thanh trạng thái trên cùng
+        // Các label trạng thái trên thanh trên cùng
         private Label _lblTurn;
         private Label _lblMark;
         private Label _lblTimer;
@@ -36,9 +36,9 @@ namespace Client.Forms
 
             this.Text = "Caro Online 15x15";
             this.ClientSize = new Size(800, 620);
-            this.DoubleBuffered = true;
+            this.DoubleBuffered = true; // giảm nhấp nháy cho Form
 
-            // ====== PANEL TRÊN: ICON + TRẢI NGANG TOÀN FORM ======
+            // Panel trên cùng chứa thông tin trạng thái
             var top = new Panel
             {
                 Dock = DockStyle.Top,
@@ -46,7 +46,7 @@ namespace Client.Forms
                 BackColor = Color.FromArgb(242, 242, 242)
             };
 
-            // đường kẻ dưới panel
+            // Đường kẻ mảnh dưới panel trên
             var bottomBorder = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -58,7 +58,7 @@ namespace Client.Forms
             var headerFont = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             var headerColor = Color.FromArgb(40, 40, 40);
 
-            // 🎯 NextTurn
+            // Lượt đi hiện tại
             _lblTurn = new Label
             {
                 AutoSize = true,
@@ -68,7 +68,7 @@ namespace Client.Forms
                 ForeColor = headerColor
             };
 
-            // 👤 Player
+            // Tên người chơi + dấu X/O
             _lblMark = new Label
             {
                 AutoSize = true,
@@ -78,7 +78,7 @@ namespace Client.Forms
                 ForeColor = headerColor
             };
 
-            // ⏱ Timer
+            // Thời gian còn lại cho lượt hiện tại
             _lblTimer = new Label
             {
                 AutoSize = true,
@@ -88,7 +88,7 @@ namespace Client.Forms
                 ForeColor = headerColor
             };
 
-            // ⭐ Rank
+            // Điểm Rank ban đầu
             _lblScore = new Label
             {
                 AutoSize = true,
@@ -98,7 +98,7 @@ namespace Client.Forms
                 ForeColor = headerColor
             };
 
-            // 🏆 W
+            // Số trận thắng
             _lblWins = new Label
             {
                 AutoSize = true,
@@ -108,7 +108,7 @@ namespace Client.Forms
                 ForeColor = headerColor
             };
 
-            // ❌ L
+            // Số trận thua
             _lblLosses = new Label
             {
                 AutoSize = true,
@@ -123,36 +123,36 @@ namespace Client.Forms
                 _lblTurn, _lblMark, _lblTimer, _lblScore, _lblWins, _lblLosses
             });
 
-            // thêm top panel vào form (trên hết, phủ rộng toàn form)
             this.Controls.Add(top);
 
-            // ====== PANEL VẼ BÀN CỜ BÊN TRÁI (DƯỚI HEADER) ======
+            // Panel bàn cờ nằm bên trái, bên dưới thanh trạng thái
             int boardWidth = 380;
             int headerHeight = top.Height;
 
             _canvas = new Panel
             {
-                Location = new Point(0, headerHeight), // ngay dưới thanh trên cùng, sát trái
+                Location = new Point(0, headerHeight),
                 Size = new Size(boardWidth, this.ClientSize.Height - headerHeight),
                 BackColor = Color.White,
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left
             };
             this.Controls.Add(_canvas);
 
-            // bật double buffer cho panel vẽ
+            // Bật double buffer cho panel vẽ để di chuyển / redraw mượt hơn
             typeof(Panel).GetProperty(
                  "DoubleBuffered",
                   System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
                 )?.SetValue(_canvas, true, null);
 
-            // ====== RENDER + GAME LOOP ======
+            // Khởi tạo renderer và game loop để vẽ + cập nhật màn hình
             _renderer = new GameRenderer(_canvas, _board);
             _loop = new GameLoop(this);
             _loop.Start();
 
-            // ====== KẾT NỐI SERVER ======
+            // Kết nối tới server TCP
             _net = new ConnectToServer("127.0.0.1", 9000, _board);
 
+            // Server gửi trạng thái bàn cờ mới
             _net.OnBoardChanged += () => this.BeginInvoke(new Action(() =>
             {
                 _lblTurn.Text = $"🎯 NextTurn: {_board.NextTurn}";
@@ -162,31 +162,36 @@ namespace Client.Forms
                 _renderer.Refresh();
             }));
 
+            // Khi có người thắng (thông báo popup)
             _net.OnWinner += w => this.BeginInvoke(new Action(() =>
             {
                 MessageBox.Show($"{w} thắng!", "🎉 Kết quả",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }));
 
+            // Nhận thông tin ban đầu: id người chơi + X/O
             _net.OnInitReceived += mark => this.BeginInvoke(new Action(() =>
             {
                 _lblMark.Text = $"👤 Player: {_playerName} ({mark})";
             }));
 
+            // Cập nhật timer lượt chơi
             _net.OnTimerUpdate += (sec, turn) => this.BeginInvoke(new Action(() =>
             {
                 _lblTimer.Text = $"⏱ {turn}: {sec}s";
                 _lblTimer.ForeColor = sec <= 5 ? Color.Red : headerColor;
             }));
 
+            // Server yêu cầu reset ván mới
             _net.OnReset += () => this.BeginInvoke(new Action(() =>
             {
-                _renderer.WinningCells = null;          // 🔹 xoá 5 ô thắng cũ
+                _renderer.WinningCells = null;   // xoá highlight 5 ô thắng cũ
                 _lblTurn.Text = "🎯 NextTurn: X";
                 _lblTimer.Text = "⏱ 30s";
                 _renderer.Refresh();
             }));
 
+            // Server gửi thông tin Rank/W/L
             _net.OnRankUpdate += (score, wins, losses) => this.BeginInvoke(new Action(() =>
             {
                 _lblScore.Text = $"⭐ Rank: {score}";
@@ -194,25 +199,26 @@ namespace Client.Forms
                 _lblLosses.Text = $"❌ L: {losses}";
             }));
 
-            // chat từ server
+            // Nhận tin nhắn chat từ server
             _net.OnChatReceived += (player, message) =>
             {
                 this.BeginInvoke(new Action(() =>
                 {
-                    if (player == _playerName) return;
+                    if (player == _playerName) return; // không echo lại tin của mình
                     AppendChat($"{player}: {message}");
                 }));
             };
 
-            // auto join luôn với tên đã truyền vào
+            // Gửi yêu cầu join phòng với tên người chơi
             _net.ConnectAndJoin(_playerName);
 
-            // click chuột xuống ô cờ
+            // Click chuột trên bàn cờ để đánh quân
             _canvas.MouseClick += (s, e) =>
             {
                 var cell = _renderer.PointToCell(e.Location);
                 if (cell == null || _board.Winner != null) return;
 
+                // Kiểm tra có đúng lượt mình không
                 if (_net.Mark != _board.NextTurn)
                 {
                     MessageBox.Show("⏳ Chưa tới lượt của bạn!", "Caro",
@@ -224,14 +230,14 @@ namespace Client.Forms
             };
         }
 
-        // dùng để vẽ line thắng (nếu server gửi list ô thắng)
+        // Cho phép set WinningCells từ ngoài (hiện tại không dùng tới)
         public void ShowWinningLine(List<Point>? winningCells)
         {
             _renderer.WinningCells = winningCells;
             _renderer.Refresh();
         }
 
-        // ====== NÚT GỬI CHAT ======
+        // Nút gửi chat
         private void btnSend_Click(object? sender, EventArgs e)
         {
             string msg = txtMessage.Text.Trim();
@@ -242,7 +248,7 @@ namespace Client.Forms
             txtMessage.Clear();
         }
 
-        // ====== NÚT ĐẦU HÀNG ======
+        // Nút đầu hàng
         private void btnSurrender_Click(object? sender, EventArgs e)
         {
             var confirm = MessageBox.Show(
@@ -258,7 +264,7 @@ namespace Client.Forms
             }
         }
 
-        // thêm dòng vào khung chat
+        // Thêm 1 dòng vào khung chat (thread-safe)
         private void AppendChat(string line)
         {
             if (txtChat.InvokeRequired)
@@ -271,6 +277,7 @@ namespace Client.Forms
             }
         }
 
+        // Đóng form → dừng loop & ngắt kết nối server
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             _loop?.Stop();
@@ -280,8 +287,8 @@ namespace Client.Forms
 
         private void FormMain_Load(object? sender, EventArgs e)
         {
-            // Tô màu chữ CARO GAME bằng RichTextBox
-            string text = "C A R O  G A M E";   // có khoảng cách giống hình bạn gửi
+            // Đổi màu từng chữ trong "C A R O  G A M E" (đỏ / xanh xen kẽ)
+            string text = "C A R O  G A M E";
             lblTitle.Text = text;
 
             int letterIndex = 0;
@@ -289,12 +296,11 @@ namespace Client.Forms
             for (int i = 0; i < text.Length; i++)
             {
                 if (text[i] == ' ')
-                    continue; // bỏ qua khoảng trắng
+                    continue;
 
                 lblTitle.SelectionStart = i;
                 lblTitle.SelectionLength = 1;
 
-                // xen kẽ đỏ – xanh
                 lblTitle.SelectionColor = (letterIndex % 2 == 0)
                     ? Color.Red
                     : Color.Green;
@@ -302,7 +308,7 @@ namespace Client.Forms
                 letterIndex++;
             }
 
-            // bỏ select
+            // Bỏ trạng thái select text
             lblTitle.SelectionLength = 0;
         }
     }

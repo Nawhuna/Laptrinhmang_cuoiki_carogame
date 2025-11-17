@@ -69,7 +69,7 @@ namespace Client.Forms
             txtMessage.Size = new Size(297, 27);
             txtMessage.TabIndex = 2;
             // 
-            // btnSend
+            // button send
             // 
             btnSend.BackColor = Color.FromArgb(60, 60, 60);
             btnSend.FlatAppearance.BorderSize = 0;
@@ -85,7 +85,7 @@ namespace Client.Forms
             btnSend.UseVisualStyleBackColor = false;
             btnSend.Click += btnSend_Click;
             // 
-            // btnSurrender
+            // button dau hang 
             // 
             btnSurrender.BackColor = Color.FromArgb(220, 0, 0);
             btnSurrender.FlatAppearance.BorderSize = 0;
